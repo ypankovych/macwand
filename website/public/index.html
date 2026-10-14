@@ -15,7 +15,7 @@
   <meta property="og:description" content="Large files, caches, build folders and unused apps, found in seconds and cleared safely. Free and open source, for macOS 12 and later.">
   <meta property="og:image" content="https://macwand.dev/assets/og-image.jpg">
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="stylesheet" href="/style.css?v=1">
+  <link rel="stylesheet" href="/style.css?v=2">
 </head>
 <body>
 
@@ -60,6 +60,7 @@
   </header>
 
   <div class="desk">
+    <div class="desk-left">
     <!-- About window: the hero -->
     <article class="window about" aria-labelledby="hero-title">
       <div class="titlebar"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span></div>
@@ -72,6 +73,13 @@
         <a class="quiet-link" href="https://github.com/ypankovych/macwand">View the source on GitHub</a>
       </div>
     </article>
+
+    <!-- Desktop file: the DMG, in the flow under the About window so the app window never covers it -->
+    <a class="desktop-file" id="downloadFile" href="https://github.com/ypankovych/macwand/releases/latest">
+      <span class="dmg-icon" aria-hidden="true"><img src="/assets/icon-256.png" alt="" width="40" height="40"></span>
+      <span class="desktop-file-name" id="dmgName">MacWand-0.1.0.dmg</span>
+    </a>
+    </div>
 
     <!-- The MacWand window, recreated. app.js renders its contents. -->
     <article class="window app" id="app" tabindex="-1" aria-label="MacWand demo window">
@@ -97,12 +105,6 @@
         <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
       </div>
     </article>
-
-    <!-- Desktop file: the DMG -->
-    <a class="desktop-file" id="downloadFile" href="https://github.com/ypankovych/macwand/releases/latest">
-      <span class="dmg-icon" aria-hidden="true"><img src="/assets/icon-256.png" alt="" width="40" height="40"></span>
-      <span class="desktop-file-name" id="dmgName">MacWand-0.1.0.dmg</span>
-    </a>
   </div>
 
   <!-- Dock -->
