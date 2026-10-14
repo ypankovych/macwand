@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleName</key>
+	<string>MacWand</string>
+	<key>CFBundleDisplayName</key>
+	<string>MacWand</string>
+	<key>CFBundleIdentifier</key>
+	<string>app.macwand.MacWand</string>
+	<key>CFBundleExecutable</key>
+	<string>MacWand</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.1.0</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>12.0</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.utilities</string>
+	<key>NSHighResolutionCapable</key>
+	<true/>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>MacWand asks Finder to move apps you can't remove directly to the Trash, which may need your password.</string>
+</dict>
+</plist>
