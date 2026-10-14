@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MacWand: find and clear what's filling your Mac</title>
+  <meta name="description" content="MacWand finds large files, caches, old downloads, build folders and apps you no longer use, and clears them safely through the Trash. Fast Rust scanner, native Mac app. Free and open source, for macOS 12 and later.">
+  <meta name="theme-color" content="#24205e">
+  <link rel="icon" type="image/png" href="/assets/favicon-64.png">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <link rel="canonical" href="https://macwand.dev/">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://macwand.dev/">
+  <meta property="og:title" content="MacWand: find and clear what's filling your Mac">
+  <meta property="og:description" content="Large files, caches, build folders and unused apps, found in seconds and cleared safely. Free and open source, for macOS 12 and later.">
+  <meta property="og:image" content="https://macwand.dev/assets/og-image.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/style.css?v=1">
+</head>
+<body>
+
+<!-- ============ The desktop: hero + live demo ============ -->
+<section class="desktop" id="top" aria-label="MacWand demo on a Mac desktop">
+  <div class="wallpaper" aria-hidden="true">
+    <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMax slice">
+      <defs>
+        <radialGradient id="glow" cx="24%" cy="30%" r="45%">
+          <stop offset="0" stop-color="#9fd8ff" stop-opacity=".75"/>
+          <stop offset=".4" stop-color="#7b8cff" stop-opacity=".4"/>
+          <stop offset="1" stop-color="#7b8cff" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#15154a"/>
+          <stop offset=".55" stop-color="#3a2f8f"/>
+          <stop offset="1" stop-color="#7a3d9e"/>
+        </linearGradient>
+        <linearGradient id="w1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a4fd0"/><stop offset="1" stop-color="#2a2378"/></linearGradient>
+        <linearGradient id="w2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3e3aa8"/><stop offset="1" stop-color="#1b1858"/></linearGradient>
+        <linearGradient id="w3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#28247a"/><stop offset="1" stop-color="#100e36"/></linearGradient>
+      </defs>
+      <rect width="1440" height="900" fill="url(#sky)"/>
+      <rect width="1440" height="900" fill="url(#glow)"/>
+      <path d="M0 520 C 260 440 500 560 760 500 S 1180 400 1440 460 V900 H0Z" fill="url(#w1)" opacity=".85"/>
+      <path d="M0 640 C 240 590 520 660 820 610 S 1220 560 1440 610 V900 H0Z" fill="url(#w2)"/>
+      <path d="M0 760 C 320 700 600 780 900 730 S 1280 700 1440 730 V900 H0Z" fill="url(#w3)"/>
+    </svg>
+  </div>
+
+  <!-- Menu bar -->
+  <header class="menubar" role="banner">
+    <nav class="menubar-left" aria-label="Site">
+      <a class="menubar-app" href="#top">MacWand</a>
+      <a href="#features">Features</a>
+      <a href="#install">Install</a>
+      <a href="https://github.com/ypankovych/macwand">GitHub</a>
+    </nav>
+    <div class="menubar-right">
+      <time class="menubar-clock" id="clock"></time>
+    </div>
+  </header>
+
+  <div class="desk">
+    <!-- About window: the hero -->
+    <article class="window about" aria-labelledby="hero-title">
+      <div class="titlebar"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span></div>
+      <div class="about-body">
+        <img class="about-icon" src="/assets/icon-256.png" width="112" height="112" alt="">
+        <h1 id="hero-title">MacWand</h1>
+        <p class="lede">Find what's filling your Mac in seconds, and clear it without the worry.</p>
+        <a class="push-button default" id="downloadHero" href="https://github.com/ypankovych/macwand/releases/latest">Download for Mac</a>
+        <p class="about-meta"><span id="versionLabel">Version 0.1.0</span><br>Free and open source<br>macOS 12 or later · Apple silicon and Intel</p>
+        <a class="quiet-link" href="https://github.com/ypankovych/macwand">View the source on GitHub</a>
+      </div>
+    </article>
+
+    <!-- The MacWand window, recreated. app.js renders its contents. -->
+    <article class="window app" id="app" tabindex="-1" aria-label="MacWand demo window">
+      <aside class="app-sidebar">
+        <span class="lights" aria-hidden="true"><i></i><i></i><i></i></span>
+        <nav class="app-nav" id="appNav" aria-label="MacWand sections"></nav>
+      </aside>
+      <div class="app-main">
+        <div class="app-toolbar">
+          <h2 class="app-title" id="appTitle">Overview</h2>
+          <button class="tool-button" id="scanButton" type="button" title="Scan this Mac (⌘R)" aria-label="Scan this Mac"></button>
+        </div>
+        <div class="app-detail" id="appDetail" aria-live="polite"></div>
+        <div class="sheet" id="sheet" role="alertdialog" aria-modal="true" aria-labelledby="sheetTitle" aria-describedby="sheetMessage" hidden>
+          <img src="/assets/icon-256.png" alt="" width="48" height="48">
+          <h3 id="sheetTitle"></h3>
+          <p id="sheetMessage"></p>
+          <div class="sheet-buttons">
+            <button class="push-button" id="sheetCancel" type="button">Cancel</button>
+            <button class="push-button destructive" id="sheetConfirm" type="button"></button>
+          </div>
+        </div>
+        <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+      </div>
+    </article>
+
+    <!-- Desktop file: the DMG -->
+    <a class="desktop-file" id="downloadFile" href="https://github.com/ypankovych/macwand/releases/latest">
+      <span class="dmg-icon" aria-hidden="true"><img src="/assets/icon-256.png" alt="" width="40" height="40"></span>
+      <span class="desktop-file-name" id="dmgName">MacWand-0.1.0.dmg</span>
+    </a>
+  </div>
+
+  <!-- Dock -->
+  <nav class="dock" aria-label="Dock">
+    <a class="dock-item" href="#app" id="dockApp" title="MacWand">
+      <img src="/assets/icon-256.png" alt="MacWand" width="52" height="52">
+      <span class="dock-dot" aria-hidden="true"></span>
+    </a>
+    <span class="dock-divider" aria-hidden="true"></span>
+    <button class="dock-item" id="dockTrash" type="button" title="Trash">
+      <span class="trash-can" id="trashCan" aria-hidden="true"></span>
+      <span class="visually-hidden" id="trashLabel">Trash, empty</span>
+    </button>
+  </nav>
+
+  <!-- Finder's empty-trash alert -->
+  <div class="alert-backdrop" id="trashAlert" hidden>
+    <div class="alert" role="alertdialog" aria-modal="true" aria-labelledby="trashAlertTitle" aria-describedby="trashAlertBody">
+      <span class="alert-icon trash-can full" aria-hidden="true"></span>
+      <h3 id="trashAlertTitle">Are you sure you want to permanently erase the items in the Trash?</h3>
+      <p id="trashAlertBody">You can't undo this action.</p>
+      <div class="sheet-buttons">
+        <button class="push-button" id="trashCancel" type="button">Cancel</button>
+        <button class="push-button default" id="trashEmpty" type="button">Empty Trash</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- macOS-style notification banner -->
+  <div class="notification" id="notification" role="status" aria-live="polite" hidden>
+    <img src="/assets/icon-256.png" alt="" width="36" height="36">
+    <div><strong id="notificationTitle">MacWand</strong><p id="notificationBody"></p></div>
+  </div>
+</section>
+
+<main>
+  <!-- ============ Features as a settings window ============ -->
+  <section class="features" id="features" aria-labelledby="features-title">
+    <div class="section-head">
+      <h2 id="features-title">Everything that piles up, in one place</h2>
+      <p>MacWand looks where the space actually goes, tells you what's safe to remove, and never removes anything you didn't pick.</p>
+    </div>
+
+    <div class="window settings">
+      <div class="titlebar"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="window-title">MacWand</span></div>
+      <div class="settings-body">
+        <div class="sidebar" role="tablist" aria-orientation="vertical" aria-label="Features">
+          <button role="tab" id="tab-fast" aria-controls="pane-fast" aria-selected="true"><span class="side-icon" style="--c:#ff9f0a"><svg viewBox="0 0 16 16"><path d="M9.2 1 3 9h4.3L6.6 15 13 6.8H8.6z" fill="currentColor"/></svg></span>Fast</button>
+          <button role="tab" id="tab-dev" aria-controls="pane-dev" aria-selected="false" tabindex="-1"><span class="side-icon" style="--c:#a866fa"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 4 2 8l3.5 4M10.5 4 14 8l-3.5 4"/></svg></span>Build folders</button>
+          <button role="tab" id="tab-apps" aria-controls="pane-apps" aria-selected="false" tabindex="-1"><span class="side-icon" style="--c:#5c85fa"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="2" y="2" width="5" height="5" rx="1.3"/><rect x="9" y="2" width="5" height="5" rx="1.3"/><rect x="2" y="9" width="5" height="5" rx="1.3"/><rect x="9" y="9" width="5" height="5" rx="1.3"/></svg></span>Real uninstalls</button>
+          <button role="tab" id="tab-safe" aria-controls="pane-safe" aria-selected="false" tabindex="-1"><span class="side-icon" style="--c:#30d158"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5 13.5 3.5v4c0 3.4-2.4 5.9-5.5 7-3.1-1.1-5.5-3.6-5.5-7v-4z"/><path d="m5.5 8 1.8 1.8L10.8 6.3"/></svg></span>Safe by default</button>
+          <button role="tab" id="tab-sizes" aria-controls="pane-sizes" aria-selected="false" tabindex="-1"><span class="side-icon" style="--c:#33b3f2"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="1.5" y="5" width="13" height="6" rx="1.5"/><path d="M4.5 5v2.5M7 5v1.5M9.5 5v2.5M12 5v1.5"/></svg></span>Honest sizes</button>
+          <button role="tab" id="tab-macs" aria-controls="pane-macs" aria-selected="false" tabindex="-1"><span class="side-icon" style="--c:#8e8e93"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="3" y="3" width="10" height="7" rx="1"/><path d="M1.5 13h13"/></svg></span>Older Macs</button>
+        </div>
+
+        <div class="pane" role="tabpanel" id="pane-fast" aria-labelledby="tab-fast">
+          <h3>Millions of files in seconds</h3>
+          <p>The scanner is written in Rust and walks your folders on every core at once. Findings stream into the window as they're found, so you can start reviewing before the scan is done.</p>
+          <div class="stat-row">
+            <div><strong>2.7 million</strong><span>files in the home folder of the author's MacBook</span></div>
+            <div><strong>~17 s</strong><span>for a full scan of all of them</span></div>
+            <div><strong>0</strong><span>files the scanner can delete: it only reads names, sizes and dates</span></div>
+          </div>
+        </div>
+
+        <div class="pane" role="tabpanel" id="pane-dev" aria-labelledby="tab-dev" hidden>
+          <h3>Knows where developers lose space</h3>
+          <p>Dependency folders and build output pile up in every project you've ever cloned. MacWand finds them and lists them by project, so you can clear the ones you're not working on. They come back with the next install or build.</p>
+          <ul class="chip-list">
+            <li>node_modules</li><li>Rust target</li><li>Python virtualenvs</li><li>CocoaPods</li><li>.next</li><li>.terraform</li><li>Xcode DerivedData</li><li>iOS device support</li><li>npm · pnpm · Cargo</li><li>Gradle · Maven · Go</li><li>pip · uv</li>
+          </ul>
+        </div>
+
+        <div class="pane" role="tabpanel" id="pane-apps" aria-labelledby="tab-apps" hidden>
+          <h3>Uninstall the whole app, not just the icon</h3>
+          <p>Dragging an app to the Trash leaves its data behind. MacWand finds the support files each app keeps in your Library and removes them along with it. It also shows when you last used each app, so the forgotten ones stand out.</p>
+          <pre class="paths" aria-label="Example of an app's support files">~/Library/Containers/<b>com.example.Editor</b>
+~/Library/Application Support/<b>com.example.Editor</b>
+~/Library/Caches/<b>com.example.Editor</b>
+~/Library/Preferences/<b>com.example.Editor</b>.plist
+~/Library/Saved Application State/<b>com.example.Editor</b>.savedState</pre>
+        </div>
+
+        <div class="pane" role="tabpanel" id="pane-safe" aria-labelledby="tab-safe" hidden>
+          <h3>Nothing goes without your say-so</h3>
+          <p>Every removal is confirmed and goes to the Trash, where you can put it back. Each section says whether it's safe to remove or worth a look first, and apps that are running are never touched. The scanner itself can't delete anything.</p>
+          <ul class="check-list">
+            <li><span class="dot safe"></span>Safe to remove: caches, logs, build folders, Xcode data</li>
+            <li><span class="dot review"></span>Review first: large files, Downloads, backups, archives</li>
+          </ul>
+        </div>
+
+        <div class="pane" role="tabpanel" id="pane-sizes" aria-labelledby="tab-sizes" hidden>
+          <h3>Counts the space files really use</h3>
+          <p>MacWand measures the blocks a file actually takes on disk, not the size it claims. Sparse disk images, files that live only in iCloud and hard links don't inflate the totals, so what it says you'll free is what you'll free.</p>
+        </div>
+
+        <div class="pane" role="tabpanel" id="pane-macs" aria-labelledby="tab-macs" hidden>
+          <h3>Runs on the Mac you already have</h3>
+          <p>One download works on Apple silicon and Intel, from macOS Monterey to the current release. No accounts, no network access, no telemetry.</p>
+          <ol class="timeline" aria-label="Supported macOS versions">
+            <li>12 Monterey</li><li>13 Ventura</li><li>14 Sonoma</li><li>15 and later</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Install ============ -->
+  <section class="install" id="install" aria-labelledby="install-title">
+    <div class="section-head">
+      <h2 id="install-title">Install in a minute</h2>
+    </div>
+    <ol class="steps">
+      <li><h3>Download</h3><p>Get <a id="downloadStep" href="https://github.com/ypankovych/macwand/releases/latest">the latest DMG</a> from GitHub releases.</p></li>
+      <li><h3>Drag to Applications</h3><p>Open the DMG and drag MacWand into your Applications folder.</p></li>
+      <li><h3>Open it once</h3><p>MacWand isn't notarized by Apple yet. The first time, open it, then go to System Settings › Privacy &amp; Security and click <em>Open Anyway</em>. On macOS 14 and earlier, right-click the app and choose <em>Open</em>.</p></li>
+    </ol>
+    <p class="install-note">For a complete scan, allow MacWand under Privacy &amp; Security › Full Disk Access. Without it, macOS hides Mail, Safari and other apps' data from the scan.</p>
+    <div class="install-cta">
+      <a class="push-button default large" id="downloadBottom" href="https://github.com/ypankovych/macwand/releases/latest">Download for Mac</a>
+      <a class="push-button large" href="https://github.com/ypankovych/macwand">Source code</a>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <p>MacWand is free software under the <a href="https://github.com/ypankovych/macwand/blob/main/LICENSE">MIT license</a>, made by <a href="https://github.com/ypankovych">Yaroslav Pankovych</a>.</p>
+  <p><a href="https://github.com/ypankovych/macwand/blob/main/SECURITY.md">Report a security issue</a> <a href="https://github.com/ypankovych/macwand/issues">Report a bug</a> <a href="https://github.com/ypankovych/macwand/blob/main/CHANGELOG.md">Changelog</a></p>
+</footer>
+
+<script src="/app.js?v=1" defer></script>
+</body>
+</html>

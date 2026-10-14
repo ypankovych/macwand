@@ -7,8 +7,9 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![macOS 12+](https://img.shields.io/badge/macOS-12%2B-lightgrey)
 
-MacWand is a fast, native disk cleaner for macOS. It finds what's taking up space (large files,
-caches, old downloads, build folders and apps you no longer use) and helps you clear it safely.
+MacWand is a fast, native disk cleaner for macOS. Try the live demo at **[macwand.dev](https://macwand.dev)**.
+It finds what's taking up space (large files, caches, old downloads, build folders and apps you no
+longer use) and helps you clear it safely.
 
 The scanner is written in Rust and checks a couple of million files in seconds. The app is
 SwiftUI, so it looks and behaves like part of macOS. Nothing is removed until you confirm, and
@@ -198,6 +199,7 @@ used only behind `#available` checks, so any unguarded use fails the build.
 | `app/Sources/MacWand/Services` | App bundle inspection, the Trash, disk capacity |
 | `app/Sources/MacWand/Views` | SwiftUI views |
 | `scripts` | Build, package, icon and screenshot scripts |
+| `website` | The [macwand.dev](https://macwand.dev) site with the in-browser demo; `website/deploy.sh` publishes it |
 
 ## Contributing
 

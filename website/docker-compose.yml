@@ -1,0 +1,17 @@
+# macwand.dev. The host's front nginx (people-tracking stack) owns ports 80/443,
+# terminates TLS and proxies to this container over the shared docker network.
+services:
+  site:
+    build: .
+    container_name: macwand-site
+    ports:
+      - "127.0.0.1:8093:80"
+    restart: unless-stopped
+    mem_limit: 32m
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
+    name: people-tracking_default

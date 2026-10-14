@@ -1,3 +1,4 @@
 /build/
 /engine/target/
 .DS_Store
+/.playwright-mcp/
