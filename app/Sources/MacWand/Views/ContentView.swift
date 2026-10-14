@@ -12,7 +12,12 @@ enum SidebarItem: Hashable {
 @MainActor
 struct ContentView: View {
     @EnvironmentObject private var store: ScanStore
-    @State private var selection: SidebarItem? = .overview
+    @State private var selection: SidebarItem?
+
+    /// - Parameter initialSelection: The sidebar item shown first.
+    init(initialSelection: SidebarItem = .overview) {
+        _selection = State(initialValue: initialSelection)
+    }
 
     var body: some View {
         split

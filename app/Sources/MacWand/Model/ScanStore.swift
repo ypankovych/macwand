@@ -19,9 +19,9 @@ final class ScanStore: ObservableObject {
     @Published private(set) var apps: [AppInfo] = []
     /// True between the end of the file scan and the app list being ready.
     @Published private(set) var isMeasuringApps = false
-    @Published private(set) var disk = DiskInfo.current()
+    @Published private(set) var disk: DiskInfo?
     /// Checked when a scan starts, not on every render: the check lists a folder.
-    @Published private(set) var hasFullDiskAccess = DiskInfo.hasFullDiskAccess
+    @Published private(set) var hasFullDiskAccess = true
     /// Message for the last removal that didn't fully succeed.
     @Published var removalError: String?
     /// Space freed by the most recent removal, shown briefly as a confirmation.
@@ -54,18 +54,34 @@ final class ScanStore: ObservableObject {
     /// Hides the freed-space confirmation.
     func dismissFreedNotice() { freedNotice = nil }
 
-    private let engine: EngineClient
+    private let engine: ScanEngine
     private let inspector: AppInspector
     private let remover: Remover
+    private let readDisk: () -> DiskInfo?
+    private let readFullDiskAccess: () -> Bool
     private var scanTask: Task<Void, Never>?
     /// Sizes of direct children of app-data folders, reported by the engine.
     private var sizeIndex: [String: Int64] = [:]
     private var pendingApps: [(path: String, size: Int64)] = []
 
-    init(engine: EngineClient = EngineClient(), inspector: AppInspector = AppInspector(), remover: Remover = Remover()) {
+    /// - Parameters:
+    ///   - engine: Where scan events come from.
+    ///   - inspector: Reads app bundles and finds their support files.
+    ///   - remover: Moves files to the Trash.
+    ///   - disk: Reads the startup disk's capacity.
+    ///   - fullDiskAccess: Reports whether the app has Full Disk Access.
+    init(engine: ScanEngine = EngineClient(),
+         inspector: AppInspector = AppInspector(),
+         remover: Remover = Remover(),
+         disk: @escaping () -> DiskInfo? = DiskInfo.current,
+         fullDiskAccess: @escaping () -> Bool = { DiskInfo.hasFullDiskAccess }) {
         self.engine = engine
         self.inspector = inspector
         self.remover = remover
+        self.readDisk = disk
+        self.readFullDiskAccess = fullDiskAccess
+        self.disk = disk()
+        self.hasFullDiskAccess = fullDiskAccess()
     }
 
     // MARK: Scanning
@@ -104,8 +120,8 @@ final class ScanStore: ObservableObject {
         apps = []
         sizeIndex = [:]
         pendingApps = []
-        disk = DiskInfo.current()
-        hasFullDiskAccess = DiskInfo.hasFullDiskAccess
+        disk = readDisk()
+        hasFullDiskAccess = readFullDiskAccess()
         refreshDerived()
     }
 
@@ -147,6 +163,8 @@ final class ScanStore: ObservableObject {
             case "size":
                 if let path = event.path { sizeIndex[path] = event.size ?? 0 }
             case "done":
+                scannedFiles = event.files ?? scannedFiles
+                scannedBytes = event.bytes ?? scannedBytes
                 let elapsed = TimeInterval(event.elapsedMs ?? 0) / 1000
                 phase = .finished(elapsed: elapsed, unreadable: event.errors ?? 0)
             default:
@@ -266,7 +284,7 @@ final class ScanStore: ObservableObject {
             let more = report.failures.count > 5 ? ["…and \(report.failures.count - 5) more"] : []
             removalError = (lines + more).joined(separator: "\n")
         }
-        disk = DiskInfo.current()
+        disk = readDisk()
         return Set(report.removed)
     }
 }

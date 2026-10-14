@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Rust targets
+        run: rustup target add aarch64-apple-darwin x86_64-apple-darwin
+
+      - name: Test scanner
+        run: cargo test --manifest-path engine/Cargo.toml
+
+      - name: Build app
+        run: scripts/build.sh
+
+      - name: Package
+        run: scripts/package.sh
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: MacWand
+          path: |
+            build/MacWand-*.dmg*
+            build/MacWand-*.zip*
+          retention-days: 14

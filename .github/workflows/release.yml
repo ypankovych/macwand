@@ -1,0 +1,52 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Rust targets
+        run: rustup target add aarch64-apple-darwin x86_64-apple-darwin
+
+      - name: Test scanner
+        run: cargo test --manifest-path engine/Cargo.toml
+
+      - name: Build and package
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+          export VERSION="${VERSION#v}"
+          scripts/build.sh
+          scripts/package.sh
+
+      - name: Extract release notes
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v v="$version" '
+            $0 ~ "^## \\[" v "\\]" { found = 1; next }
+            found && /^## \[/ { exit }
+            found && /^\[.*\]: / { exit }
+            found { print }
+          ' CHANGELOG.md > build/notes.md
+          cat >> build/notes.md <<'NOTES'
+
+          ### Install
+
+          Download **MacWand-*.dmg** below, open it and drag MacWand into Applications. Runs on macOS 12 and later, Apple silicon and Intel.
+          The app isn't notarized yet; see [Install](https://github.com/ypankovych/macwand#install) for how to open it the first time.
+          NOTES
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" build/MacWand-*.dmg build/MacWand-*.zip build/MacWand-*.sha256 \
+            --title "MacWand ${GITHUB_REF_NAME#v}" --notes-file build/notes.md

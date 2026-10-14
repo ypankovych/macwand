@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 /// A sortable, multi-select table of removable files with a removal bar.
 @MainActor
@@ -228,7 +229,15 @@ struct FileIcon: View {
 
     private static func icon(for path: String) -> NSImage {
         if let cached = cache.object(forKey: path as NSString) { return cached }
-        let icon = NSWorkspace.shared.icon(forFile: path)
+        let icon: NSImage
+        if FileManager.default.fileExists(atPath: path) {
+            icon = NSWorkspace.shared.icon(forFile: path)
+        } else {
+            // Already gone: show the icon for its kind (no extension means a folder here).
+            let pathExtension = (path as NSString).pathExtension
+            let type = pathExtension.isEmpty ? UTType.folder : (UTType(filenameExtension: pathExtension) ?? .data)
+            icon = NSWorkspace.shared.icon(for: type)
+        }
         cache.setObject(icon, forKey: path as NSString)
         return icon
     }

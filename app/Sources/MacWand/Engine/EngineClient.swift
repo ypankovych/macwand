@@ -20,8 +20,16 @@ struct EngineEvent: Decodable {
     let label: String?
 }
 
+/// Source of scan events: the bundled engine, or scripted data for screenshots.
+protocol ScanEngine {
+    /// Scans the home folder and installed apps.
+    func scan() -> AsyncThrowingStream<[EngineEvent], Error>
+    /// Sizes the given paths.
+    func sizes(of paths: [String]) -> AsyncThrowingStream<[EngineEvent], Error>
+}
+
 /// Runs the bundled `macwand-engine` helper and streams its events.
-struct EngineClient {
+struct EngineClient: ScanEngine {
     enum Failure: LocalizedError {
         case missingEngine
         case exited(Int32)
@@ -91,8 +99,8 @@ struct EngineClient {
 }
 
 /// Splits a byte stream into newline-terminated JSON events, keeping partial lines.
-/// Only touched from the pipe's serial readability handler.
-private final class LineReader {
+/// Not thread-safe; the engine client uses it from the pipe's serial handler.
+final class LineReader {
     private var pending = Data()
     private let decoder: JSONDecoder = {
         let decoder = JSONDecoder()

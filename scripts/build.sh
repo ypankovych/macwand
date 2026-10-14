@@ -3,6 +3,7 @@
 # (Apple silicon + Intel) binaries for macOS 12 and later, ad-hoc signed.
 # Needs only the Xcode Command Line Tools and a Rust toolchain with both
 # aarch64-apple-darwin and x86_64-apple-darwin targets.
+# Set VERSION (e.g. VERSION=1.2.3) to stamp the bundle version; otherwise Info.plist's is kept.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -31,6 +32,9 @@ done
 lipo -create "$OBJ/MacWand-arm64" "$OBJ/MacWand-x86_64" -output "$APP/Contents/MacOS/MacWand"
 lipo -create "$OBJ/macwand-engine-arm64" "$OBJ/macwand-engine-x86_64" -output "$APP/Contents/MacOS/macwand-engine"
 cp "$ROOT/app/Resources/Info.plist" "$APP/Contents/"
+if [ -n "${VERSION:-}" ]; then
+  /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" "$APP/Contents/Info.plist"
+fi
 cp "$ROOT/app/Resources/AppIcon.icns" "$APP/Contents/Resources/"
 
 # Ad-hoc signature: enough to run locally and keep a stable identity for privacy permissions.
